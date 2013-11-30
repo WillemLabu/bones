@@ -14,8 +14,21 @@
 
 		</div>
 
-		<?php // all js scripts are loaded in library/bones.php ?>
-		<?php wp_footer(); ?>
+<?php
+
+// Load jQuery from a CDN with a local fallback
+// Don't include the 'http:' in case of SSL
+
+?>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="<?php echo get_template_directory_uri() ?>/js/vendor/jquery-1.10.2.min.js"><\/script>')</script>
+
+<?php
+
+// All other JavaScript files are loaded in library/bones.php
+wp_footer();
+
+?>
 
 	</body>
 

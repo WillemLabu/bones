@@ -23,6 +23,8 @@ function bones_ahoy() {
 
 	// launching operation cleanup
 	add_action( 'init', 'bones_head_cleanup' );
+	// A better title
+	add_filter( 'wp_title', 'rw_title', 10, 3 );
 	// remove WP version from RSS
 	add_filter( 'the_generator', 'bones_rss_version' );
 	// remove pesky injected css for recent comments widget
@@ -53,10 +55,8 @@ function bones_ahoy() {
 
 /*********************
 WP_HEAD GOODNESS
-The default wordpress head is
-a mess. Let's clean it up by
-removing all the junk we don't
-need.
+The default WordPress head is a mess.
+Let's clean it up by removing all the junk we don't need.
 *********************/
 
 function bones_head_cleanup() {
@@ -84,6 +84,38 @@ function bones_head_cleanup() {
 	add_filter( 'script_loader_src', 'bones_remove_wp_ver_css_js', 9999 );
 
 } /* end bones head cleanup */
+
+// A better title
+// http://www.deluxeblogtips.com/2012/03/better-title-meta-tag.html
+function rw_title( $title, $sep, $seplocation ) {
+    
+    global $page, $paged;
+    
+    // Don't affect in feeds.
+    if ( is_feed() ) return $title;
+    
+    // Add the blog's name
+    if ( 'right' == $seplocation ) {
+        $title .= get_bloginfo( 'name' );
+    } else {
+        $title = get_bloginfo( 'name' ) . $title;
+    }
+
+    // Add the blog description for the home/front page.
+    $site_description = get_bloginfo( 'description', 'display' );
+    
+    if ( $site_description && ( is_home() || is_front_page() ) ) {
+        $title .= " {$sep} {$site_description}";
+    }
+    
+    // Add a page number if necessary:
+    if ( $paged >= 2 || $page >= 2 ) {
+        $title .= " {$sep} " . sprintf( __( 'Page %s', 'dbt' ), max( $paged, $page ) );
+    }
+
+    return $title;
+    
+}
 
 // remove WP version from RSS
 function bones_rss_version() { return ''; }
@@ -120,42 +152,55 @@ function bones_gallery_style($css) {
 SCRIPTS & ENQUEUEING
 *********************/
 
-// loading modernizr and jquery, and reply script
+/**
+ *	Load the JavaScript and CSS required for the theme
+ *
+ *	jQuery is loaded from Google's CDN
+ *	 with a local fall-back a la HTML5BP
+ *	 in footer.php
+ *
+ */
 function bones_scripts_and_styles() {
-	global $wp_styles; // call global $wp_styles variable to add conditional wrapper around ie stylesheet the WordPress way
+
+	// This allows us to add a conditional wrapper
+	//  around IE StyleSheet, the WordPress way!
+	global $wp_styles;
+
+	// Don't add these files in the wp-admin
 	if (!is_admin()) {
 
-		// modernizr (without media query polyfill)
-		wp_register_script( 'bones-modernizr', get_stylesheet_directory_uri() . '/library/js/libs/modernizr.custom.min.js', array(), '2.5.3', false );
+		// Get the template path.
+		// Let's not use get_bloginfo() in case this is a child theme.
+		$theme_path = get_stylesheet_directory_uri();
 
-		// register main stylesheet
-		wp_register_style( 'bones-stylesheet', get_stylesheet_directory_uri() . '/library/css/style.css', array(), '', 'all' );
+		// Modernizr (without media query polyfill)
+		// Added in wp_head()
+		wp_register_script( 'bones-modernizr', $theme_path . '/library/js/libs/modernizr.custom.min.js', array(), '2.5.3', false );
 
-		// ie-only style sheet
-		wp_register_style( 'bones-ie-only', get_stylesheet_directory_uri() . '/library/css/ie.css', array(), '' );
+		// The theme's main StyleSheet
+		wp_register_style( 'bones-stylesheet', $theme_path . '/library/css/style.css', array(), '', 'all' );
 
-		// comment reply script for threaded comments
+		// IE specific overrides
+		wp_register_style( 'bones-ie-only', $theme_path . '/library/css/ie.css', array(), '' );
+
+		// Comments on single pages and posts.
+		// Only where comments have been enabled.
 		if ( is_singular() AND comments_open() AND (get_option('thread_comments') == 1)) {
 			wp_enqueue_script( 'comment-reply' );
 		}
 
-		//adding scripts file in the footer
-		wp_register_script( 'bones-js', get_stylesheet_directory_uri() . '/library/js/scripts.js', array( 'jquery' ), '', true );
+		// The theme's main JavaScript file
+		wp_register_script( 'bones-js', $theme_path . '/library/js/scripts.js', array( 'jquery' ), '', true );
 
-		// enqueue styles and scripts
+		// Add them all to the page!
 		wp_enqueue_script( 'bones-modernizr' );
+		wp_enqueue_script( 'bones-js' );
+
 		wp_enqueue_style( 'bones-stylesheet' );
 		wp_enqueue_style( 'bones-ie-only' );
 
-		$wp_styles->add_data( 'bones-ie-only', 'conditional', 'lt IE 9' ); // add conditional wrapper around ie stylesheet
-
-		/*
-		I recommend using a plugin to call jQuery
-		using the google cdn. That way it stays cached
-		and your site will load faster.
-		*/
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'bones-js' );
+		// Conditional comments for Internet Explorer less than 9
+		$wp_styles->add_data( 'bones-ie-only', 'conditional', 'lt IE 9' );
 
 	}
 }
