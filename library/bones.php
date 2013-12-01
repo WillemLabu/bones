@@ -169,6 +169,9 @@ function bones_scripts_and_styles() {
 	// Don't add these files in the wp-admin
 	if (!is_admin()) {
 
+		// Unregister WordPress' native jQuery
+		wp_deregister_script( "jquery" );
+
 		// Get the template path.
 		// Let's not use get_bloginfo() in case this is a child theme.
 		$theme_path = get_stylesheet_directory_uri();
@@ -189,15 +192,21 @@ function bones_scripts_and_styles() {
 			wp_enqueue_script( 'comment-reply' );
 		}
 
-		// The theme's main JavaScript file
-		wp_register_script( 'bones-js', $theme_path . '/library/js/scripts.js', array( 'jquery' ), '', true );
+		// The theme's main JavaScript files
+		wp_register_script( 'bones-js',      $theme_path . '/library/js/scripts.js',          array(), $ver = false, $in_footer = true );
+		wp_register_script( 'bones-plugins', $theme_path . '/library/js/plugins.js',          array(), $ver = false, $in_footer = true );
+
+		// Responsive JavaScript
+		wp_register_script( 'bones-enquire', $theme_path . '/library/js/libs/enquire.min.js', array(), $ver = false, $in_footer = true );
 
 		// Add them all to the page!
-		wp_enqueue_script( 'bones-modernizr' );
-		wp_enqueue_script( 'bones-js' );
-
 		wp_enqueue_style( 'bones-stylesheet' );
 		wp_enqueue_style( 'bones-ie-only' );
+
+		wp_enqueue_script( 'bones-modernizr' );
+		wp_enqueue_script( 'bones-enquire' );
+		wp_enqueue_script( 'bones-plugins' );
+		wp_enqueue_script( 'bones-js' );
 
 		// Conditional comments for Internet Explorer less than 9
 		$wp_styles->add_data( 'bones-ie-only', 'conditional', 'lt IE 9' );

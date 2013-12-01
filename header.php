@@ -52,6 +52,20 @@
 </script>
 <?php } // end Google Analytics ?>
 
+<?php // Load a responsive polyfill for old version of IE ?>
+<script>
+	Modernizr.load([
+		{
+			test: window.matchMedia,
+			nope: [
+				"<?php echo get_template_directory_uri() ?>/library/js/libs/media.match.min.js",
+				"<?php echo get_template_directory_uri() ?>/library/js/libs/respond.min.js"
+			]
+		},
+		"<?php echo get_template_directory_uri() ?>/library/js/libs/cssua.min.js" // Adds specific UA classes to the <html> tag - remove if not needed
+	]);
+</script>
+
 	</head>
 
 	<body <?php body_class(); ?>>
