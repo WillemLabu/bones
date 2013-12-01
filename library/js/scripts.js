@@ -44,21 +44,27 @@ jQuery(document).ready(function($) {
 	);
 
 
-	enquire.register( "screen and (min-width: 481px)",
+	enquire.register( "screen and (min-width: 768px)",
 		{
 			deferSetup : true, // Only call setup() when the mediaquery is matched
 
 			setup : function() {
 				// Call this code once, the first time the mediaquery is matched
-				console.log('SETUP: 481px JS');
+				console.log('SETUP: 768px JS');
+
+				/* load gravatars */
+				$('.comment img[data-gravatar]').each(function(){
+					$(this).attr('src',$(this).attr('data-gravatar'));
+				});
+
 			},
 			match : function() {
 				// Call this code every time the mediaquery is matched
-				console.log('Screen is 481px or wider.');
+				console.log('Screen is 768px or wider.');
 			},
 			unmatch : function() {
 				// Call this code every time the mediaquery is _un_matched
-				console.log('Screen is smaller than 481px.');
+				console.log('Screen is smaller than 768px.');
 			}
 		},
 		true  // The `true` here means that dumb browsers (IE 6-8) will _always run_ this code.
